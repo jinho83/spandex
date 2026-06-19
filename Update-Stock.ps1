@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host "===================================================" -ForegroundColor Cyan
-Write-Host "  스판덱스 동향 Firebase 실시간 동기화 시작" -ForegroundColor Cyan
+Write-Host "  Spandex Trends Firebase Real-time Sync Starting" -ForegroundColor Cyan
 Write-Host "===================================================" -ForegroundColor Cyan
 
 # A. Helper function to check internet connection quickly
@@ -23,9 +23,9 @@ function Test-InternetConnection {
     return $false
 }
 
-Write-Host "[1/3] 인터넷 연결 상태 점검 중..." -ForegroundColor Cyan
+Write-Host "[1/3] Checking internet connection..." -ForegroundColor Cyan
 if (-not (Test-InternetConnection)) {
-    Write-Host " ⚠ 오프라인 상태 감지. 연결 대기 중 (최대 10초)..." -ForegroundColor Yellow
+    Write-Host " [!] Offline state detected. Waiting for connection (max 10s)..." -ForegroundColor Yellow
     $isOnline = $false
     for ($i = 0; $i -lt 5; $i++) {
         Start-Sleep -Seconds 2
@@ -35,16 +35,16 @@ if (-not (Test-InternetConnection)) {
         }
     }
     if (-not $isOnline) {
-        Write-Host " ❌ 인터넷 연결 실패: 프로그램이 종료됩니다." -ForegroundColor Red
+        Write-Host " [x] Internet connection failed: Exiting program." -ForegroundColor Red
         exit
     }
 }
-Write-Host " ✔ 인터넷 연결 확인 완료!" -ForegroundColor Green
+Write-Host " [o] Internet connection verified!" -ForegroundColor Green
 
 # B. Read Firebase configuration from firebase_config.js
 $configPath = Join-Path $PSScriptRoot "firebase_config.js"
 if (-not (Test-Path $configPath)) {
-    Write-Host " ❌ 오류: firebase_config.js 파일을 찾을 수 없습니다!" -ForegroundColor Red
+    Write-Host " [x] Error: firebase_config.js not found!" -ForegroundColor Red
     exit
 }
 
@@ -54,14 +54,14 @@ $projectId = ""
 if ($configContent -match 'projectId:\s*["'']([^"'']+)["'']') { $projectId = $Matches[1] }
 
 if (-not $projectId -or $projectId -like "*your-project-id*") {
-    Write-Host " ⚠ 알림: Firebase 설정이 아직 완료되지 않았거나 기본값입니다." -ForegroundColor Yellow
-    Write-Host "   [firebase_config.js](file://$configPath) 파일을 열고" -ForegroundColor Yellow
-    Write-Host "   실제 Firebase 프로젝트 ID(projectId)를 입력해 주세요." -ForegroundColor Yellow
+    Write-Host " [!] Warning: Firebase config is not completed or contains default values." -ForegroundColor Yellow
+    Write-Host "   Please open [firebase_config.js](file://$configPath) and" -ForegroundColor Yellow
+    Write-Host "   enter your actual Firebase projectId." -ForegroundColor Yellow
     exit
 }
 
 # C. Scrape live data from internet
-Write-Host "[2/3] 인터넷 실시간 데이터 수집 중..." -ForegroundColor Cyan
+Write-Host "[2/3] Collecting real-time market data..." -ForegroundColor Cyan
 
 $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
@@ -73,7 +73,7 @@ function Get-SunSirsContent {
         $resp = Invoke-WebRequest -Uri $url -UserAgent $userAgent -WebSession $session -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop
         if ($resp.Content -match 'var _0x2 = "([^"]+)"') {
             $cookieValue = $Matches[1]
-            Write-Host "   - SunSirs WAF 감지. 쿠키 생성 중..." -ForegroundColor Yellow
+            Write-Host "   - SunSirs WAF detected. Generating cookie..." -ForegroundColor Yellow
             $cookie = New-Object System.Net.Cookie('HW_CHECK', $cookieValue, '/', '.sunsirs.com')
             $session.Cookies.Add($cookie)
             $resp2 = Invoke-WebRequest -Uri $url -UserAgent $userAgent -WebSession $session -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop
@@ -81,7 +81,7 @@ function Get-SunSirsContent {
         }
         return $resp.Content
     } catch {
-        Write-Host "   ⚠ SunSirs 연결 실패 ($url): $_" -ForegroundColor Yellow
+        Write-Host "   [!] SunSirs connection failed ($url): $_" -ForegroundColor Yellow
         return $null
     }
 }
@@ -91,9 +91,9 @@ $naverResponse = $null
 try {
     $naverRaw = Invoke-WebRequest -Uri "https://m.stock.naver.com/api/stock/298020/price?pageSize=60&page=1" -UserAgent $userAgent -TimeoutSec 8 -UseBasicParsing -ErrorAction Stop
     $naverResponse = $naverRaw.Content | ConvertFrom-Json
-    Write-Host "   ✔ 실시간 효성티앤씨 주가 수집 완료!" -ForegroundColor Green
+    Write-Host "   [o] Hyosung TNC stock price collection complete!" -ForegroundColor Green
 } catch {
-    Write-Host "   ⚠ 네이버 주가 API 연결 실패: $_" -ForegroundColor Yellow
+    Write-Host "   [!] Naver Stock API connection failed: $_" -ForegroundColor Yellow
 }
 
 # 2. Fetch SunSirs Spandex News list
@@ -125,10 +125,10 @@ if ($null -ne $newsHtml) {
             # Parse Spandex Price
             if ($plainText -match '(\d{2},\d{3})\s*RMB/ton') {
                 $spandexPrice = [int]($Matches[1].Replace(",", ""))
-                Write-Host "   ✔ 실시간 스판덱스 고시가 수집 완료: $spandexPrice RMB/ton" -ForegroundColor Green
+                Write-Host "   [o] Spandex price collection complete: $spandexPrice RMB/ton" -ForegroundColor Green
             } elseif ($plainText -match '(\d{2},\d{3})\s*RMB') {
                 $spandexPrice = [int]($Matches[1].Replace(",", ""))
-                Write-Host "   ✔ 실시간 스판덱스 고시가 수집 완료: $spandexPrice RMB/ton" -ForegroundColor Green
+                Write-Host "   [o] Spandex price collection complete: $spandexPrice RMB/ton" -ForegroundColor Green
             }
             
             # Parse Inventory Days
@@ -137,10 +137,10 @@ if ($null -ne $newsHtml) {
                 $val1 = [double]$Matches[1]
                 $val2 = [double]$Matches[2]
                 $spandexInv = ($val1 + $val2) / 2
-                Write-Host "   ✔ 실시간 중국 재고일수 수집 완료 (평균): $spandexInv 일" -ForegroundColor Green
+                Write-Host "   [o] Spandex inventory days collection complete (average): $spandexInv days" -ForegroundColor Green
             } elseif ($plainText -match 'inventory\s+(?:level|levels|days|around|of)?\s*(?:around|is|was|to|at)?\s*(\d{2}(?:\.\d)?)\s*days') {
                 $spandexInv = [double]$Matches[1]
-                Write-Host "   ✔ 실시간 중국 재고일수 수집 완료: $spandexInv 일" -ForegroundColor Green
+                Write-Host "   [o] Spandex inventory days collection complete: $spandexInv days" -ForegroundColor Green
             }
         }
     }
@@ -219,7 +219,7 @@ if ($null -ne $spandexPrice -or $null -ne $spandexInv) {
 }
 
 # F. Push changes to Firebase Firestore via Commit endpoint (single batch request)
-Write-Host "[3/3] Firebase Firestore 데이터 갱신 중..." -ForegroundColor Cyan
+Write-Host "[3/3] Syncing data with Firebase Firestore..." -ForegroundColor Cyan
 
 $writes = @()
 foreach ($label in $mergedFields.Keys) {
@@ -249,20 +249,20 @@ if ($writes.Count -gt 0) {
     
     try {
         $resp = Invoke-WebRequest -Uri $uri -Method Post -Headers $headers -Body $bodyJson -UseBasicParsing -TimeoutSec 15 -ErrorAction Stop
-        Write-Host " ✔ 성공적으로 $($writes.Count)개의 주차 데이터를 Firebase Firestore에 동기화했습니다!" -ForegroundColor Green
+        Write-Host " [o] Successfully synchronized $($writes.Count) weekly records to Firebase Firestore!" -ForegroundColor Green
     } catch {
-        Write-Host " ❌ Firebase Firestore 동기화 실패: $_" -ForegroundColor Red
+        Write-Host " [x] Firebase Firestore synchronization failed: $_" -ForegroundColor Red
         if ($null -ne $_.Exception -and $null -ne $_.Exception.Response) {
             $stream = $_.Exception.Response.GetResponseStream()
             $reader = New-Object System.IO.StreamReader($stream)
             $errBody = $reader.ReadToEnd()
-            Write-Host "   상세 오류: $errBody" -ForegroundColor Red
+            Write-Host "   Detail error: $errBody" -ForegroundColor Red
         }
     }
 } else {
-    Write-Host " ✔ 이미 모든 데이터가 최신 상태입니다." -ForegroundColor Green
+    Write-Host " [o] All data is already up-to-date." -ForegroundColor Green
 }
 
 Write-Host "===================================================" -ForegroundColor Cyan
-Write-Host "  동기화 완료!" -ForegroundColor Cyan
+Write-Host "  Synchronization complete!" -ForegroundColor Cyan
 Write-Host "===================================================" -ForegroundColor Cyan

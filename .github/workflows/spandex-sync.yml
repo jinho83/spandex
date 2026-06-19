@@ -16,7 +16,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Spandex & Stock Updater
-        shell: powershell
+        shell: pwsh
         run: |
-          # Execute the update script using PowerShell
           .\Update-Stock.ps1
