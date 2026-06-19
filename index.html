@@ -1147,10 +1147,10 @@
                             }
                         },
                         yPrice: {
-                            type: 'logarithmic',
+                            type: 'linear',
                             display: true,
                             position: 'left',
-                            title: { display: true, text: '가격 (위안/톤) [로그]', font: { family: "'Outfit', 'Noto Sans KR', sans-serif", weight: 'bold' } },
+                            title: { display: true, text: '가격 (위안/톤)', font: { family: "'Outfit', 'Noto Sans KR', sans-serif", weight: 'bold' } },
                             min: 25000,
                             max: 35000,
                             afterBuildTicks: function(scale) {
@@ -1178,10 +1178,10 @@
                             grid: { drawOnChartArea: false }
                         },
                         yStock: {
-                            type: 'logarithmic',
+                            type: 'linear',
                             display: true,
                             position: 'right',
-                            title: { display: true, text: '효성티앤씨 주가 (원) [로그]', font: { family: "'Outfit', 'Noto Sans KR', sans-serif", weight: 'bold' } },
+                            title: { display: true, text: '효성티앤씨 주가 (원)', font: { family: "'Outfit', 'Noto Sans KR', sans-serif", weight: 'bold' } },
                             min: 150000,
                             max: 600000,
                             grid: { drawOnChartArea: false },
