@@ -2,6 +2,7 @@
 # This script fetches latest stock price & spandex data, then synchronizes it with Firebase.
 
 $ProgressPreference = 'SilentlyContinue'
+$ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host "===================================================" -ForegroundColor Cyan
