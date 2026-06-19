@@ -1,0 +1,22 @@
+name: Spandex Live Market Sync
+
+on:
+  schedule:
+    # Runs at 00:10 UTC (9:10 AM KST) and 09:10 UTC (6:10 PM KST) every day
+    - cron: '10 0,9 * * *'
+  workflow_dispatch:
+    # Allows manual triggering from the GitHub Actions tab
+
+jobs:
+  sync:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Spandex & Stock Updater
+        shell: powershell
+        run: |
+          # Execute the update script using PowerShell
+          .\Update-Stock.ps1
