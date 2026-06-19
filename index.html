@@ -244,8 +244,8 @@
                 </div>
                 <!-- 주식 프로그램 스타일의 조회구간 압축 슬라이더 -->
                 <div class="mt-4 sm:mt-0 flex items-center space-x-3 bg-white/80 dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                    <label for="dataRangeSlider" class="text-xs text-slate-500 dark:text-slate-400 font-medium">조회 기간 (최근 <span id="rangeValue" class="font-bold text-violet-600 dark:text-violet-400">26</span>주):</label>
-                    <input type="range" id="dataRangeSlider" min="4" max="52" value="26" class="w-32 md:w-48 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-violet-600 dark:accent-violet-500" title="좌우로 드래그하여 차트 표시 범위를 조절하세요">
+                    <label for="dataRangeSlider" class="text-xs text-slate-500 dark:text-slate-400 font-medium">조회 기간 (최근 <span id="rangeValue" class="font-bold text-violet-600 dark:text-violet-400">52</span>주):</label>
+                    <input type="range" id="dataRangeSlider" min="4" max="52" value="52" class="w-32 md:w-48 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-violet-600 dark:accent-violet-500" title="좌우로 드래그하여 차트 표시 범위를 조절하세요">
                 </div>
             </div>
             
@@ -901,7 +901,7 @@
             if (initialIndex < 0) initialIndex = 0;
 
             var currentEndIndex = initialIndex; 
-            var currentVisibleCount = 26;
+            var currentVisibleCount = 52;
 
             // ========================================
             // Firebase 데이터 비동기 연동 및 로드
